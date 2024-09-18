@@ -1,10 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from management.school_entities import Student, Instructor, Course
-from management.json_manager import *
+from src.management.school_entities import Student, Instructor, Course
+from src.management.json_manager import *
 
 # Create files to store data
 create_json_files()

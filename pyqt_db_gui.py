@@ -1,14 +1,10 @@
-from PyQt5.QtWidgets import *
+from PyQt5.QtWidgets import (
+    QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel,
+    QLineEdit, QPushButton, QListWidget, QTabWidget
+)
 import sys
-import os
-
-# Add the src directory to the Python path
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from management.school_entities import Student, Instructor, Course
-from management.json_manager import *
-
-# Create files to store data
-create_json_files()
+from src.database.database import create_student, read_students, update_student, delete_student, create_instructor, read_instructors, update_instructor, delete_instructor, create_course, read_course, update_course, delete_course
+from src.management.school_entities import Student, Instructor, Course
 
 class SchoolManagementSystem(QMainWindow):
     def __init__(self):
@@ -50,30 +46,26 @@ class SchoolManagementSystem(QMainWindow):
         main_layout.addWidget(self.message_label)
 
         # Load initial data and populate listboxes
-        self.load_data()
         self.populate_listboxes()
-
-    def load_data(self):
-        self.students = load_data_from_json('students.json')
-        self.instructors = load_data_from_json('instructors.json')
-        self.courses = load_data_from_json('courses.json')
 
     def populate_listboxes(self):
         # Populate students listbox
         self.student_listbox.clear()
-        self.load_data()
-        for id, student_details in self.students.items():
-            self.student_listbox.addItem(f"{student_details['name']} (ID: {id})")
+        students = read_students()
+        for student in students:
+            self.student_listbox.addItem(f"{student[1]} (ID: {student[0]})")  # student[1]: name, student[0]: id
 
         # Populate instructors listbox
         self.instructor_listbox.clear()
-        for id, instructor_details in self.instructors.items():
-            self.instructor_listbox.addItem(f"{instructor_details['name']} (ID: {id})")
+        instructors = read_instructors()
+        for instructor in instructors:
+            self.instructor_listbox.addItem(f"{instructor[1]} (ID: {instructor[0]})")  # instructor[1]: name, instructor[0]: id
 
         # Populate courses listbox
         self.course_listbox.clear()
-        for id, course_details in self.courses.items():
-            self.course_listbox.addItem(f"{course_details['name']} (ID: {id})")
+        courses = read_course()
+        for course in courses:
+            self.course_listbox.addItem(f"{course[1]} (ID: {course[0]})")  # course[1]: name, course[0]: id
 
     def init_students_tab(self):
         layout = QVBoxLayout()
@@ -122,20 +114,17 @@ class SchoolManagementSystem(QMainWindow):
             return
 
         # Create a Student object
-        student = Student(name=name, age=int(age), email=email, id=student_id)
+        student = Student(name, int(age), email, student_id)
 
         try:
-            validate_and_add_user(student)
-
-            # Save data to a JSON file
-            save_data_to_json(student, 'students.json')
+            create_student(student)
 
             # Update listbox and message label
-            self.student_listbox.addItem(f"{student.name} (ID: {student.id})")
+            self.populate_listboxes()
             self.message_label.setText("Student added successfully!")
             self.clear_student_entries()
 
-        except ValueError as e:
+        except Exception as e:
             self.message_label.setText(f"Error: {e}")
 
     def clear_student_entries(self):
@@ -152,12 +141,12 @@ class SchoolManagementSystem(QMainWindow):
 
         student_id = selected.text().split(" (ID: ")[-1][:-1]
 
-        # Use delete_from_json function
-        if delete_from_json(student_id, 'students.json'):
+        try:
+            delete_student(student_id)
             self.populate_listboxes()
             self.message_label.setText(f"Student {student_id} deleted successfully!")
-        else:
-            self.message_label.setText("Error: Student ID not found in the records.")
+        except Exception as e:
+            self.message_label.setText(f"Error: {e}")
 
     def edit_student(self):
         selected = self.student_listbox.currentItem()
@@ -166,17 +155,18 @@ class SchoolManagementSystem(QMainWindow):
             return
 
         student_id = selected.text().split(" (ID: ")[-1][:-1]
-        student_details = self.students[student_id]
+        students = read_students()
+        student_details = next((student for student in students if student[0] == student_id), None)
 
-        # Fill the entry fields with the current student's details for editing
-        self.student_name_entry.setText(student_details['name'])
-        self.student_age_entry.setText(str(student_details['age']))
-        self.student_email_entry.setText(student_details['email'])
-        self.student_id_entry.setText(student_id)
+        if student_details:
+            self.student_name_entry.setText(student_details[1])
+            self.student_age_entry.setText(str(student_details[2]))
+            self.student_email_entry.setText(student_details[3])
+            self.student_id_entry.setText(student_details[0])
 
-        save_changes_btn = QPushButton("Save Changes")
-        save_changes_btn.clicked.connect(lambda: self.save_student_changes(student_id))
-        self.students_tab.layout().addWidget(save_changes_btn)
+            save_changes_btn = QPushButton("Save Changes")
+            save_changes_btn.clicked.connect(lambda: self.save_student_changes(student_id))
+            self.students_tab.layout().addWidget(save_changes_btn)
 
     def save_student_changes(self, student_id):
         name = self.student_name_entry.text()
@@ -193,16 +183,17 @@ class SchoolManagementSystem(QMainWindow):
             return
 
         # Update the student's information
-        student = Student(name=name, age=int(age), email=email, id=student_id)
+        student = Student(name, int(age), email, student_id)
 
-        save_data_to_json(student, 'students.json')
-        self.load_data()
-        self.populate_listboxes()
-        self.clear_student_entries()
-        self.message_label.setText(f"Student {student_id} updated successfully!")
+        try:
+            update_student(student)
+            self.populate_listboxes()
+            self.clear_student_entries()
+            self.message_label.setText(f"Student {student_id} updated successfully!")
+        except Exception as e:
+            self.message_label.setText(f"Error: {e}")
 
     def init_instructors_tab(self):
-        # Initialize Instructors Tab
         layout = QVBoxLayout()
         self.instructors_tab.setLayout(layout)
 
@@ -247,20 +238,17 @@ class SchoolManagementSystem(QMainWindow):
             return
 
         # Create an Instructor object
-        instructor = Instructor(name=name, age=int(age), email=email, id=instructor_id)
+        instructor = Instructor(name, int(age), email, instructor_id)
 
         try:
-            validate_and_add_user(instructor)
-
-            # Save data to a JSON file
-            save_data_to_json(instructor, 'instructors.json')
+            create_instructor(instructor)
 
             # Update listbox and message label
-            self.instructor_listbox.addItem(f"{instructor.name} (ID: {instructor.id})")
+            self.populate_listboxes()
             self.message_label.setText("Instructor added successfully!")
             self.clear_instructor_entries()
 
-        except ValueError as e:
+        except Exception as e:
             self.message_label.setText(f"Error: {e}")
 
     def clear_instructor_entries(self):
@@ -277,12 +265,12 @@ class SchoolManagementSystem(QMainWindow):
 
         instructor_id = selected.text().split(" (ID: ")[-1][:-1]
 
-        # Use delete_from_json function
-        if delete_from_json(instructor_id, 'instructors.json'):
+        try:
+            delete_instructor(instructor_id)
             self.populate_listboxes()
             self.message_label.setText(f"Instructor {instructor_id} deleted successfully!")
-        else:
-            self.message_label.setText("Error: Instructor ID not found in the records.")
+        except Exception as e:
+            self.message_label.setText(f"Error: {e}")
 
     def edit_instructor(self):
         selected = self.instructor_listbox.currentItem()
@@ -291,17 +279,18 @@ class SchoolManagementSystem(QMainWindow):
             return
 
         instructor_id = selected.text().split(" (ID: ")[-1][:-1]
-        instructor_details = self.instructors[instructor_id]
+        instructors = read_instructors()
+        instructor_details = next((instructor for instructor in instructors if instructor[0] == instructor_id), None)
 
-        # Fill the entry fields with the current instructor's details for editing
-        self.instructor_name_entry.setText(instructor_details['name'])
-        self.instructor_age_entry.setText(str(instructor_details['age']))
-        self.instructor_email_entry.setText(instructor_details['email'])
-        self.instructor_id_entry.setText(instructor_id)
+        if instructor_details:
+            self.instructor_name_entry.setText(instructor_details[1])
+            self.instructor_age_entry.setText(str(instructor_details[2]))
+            self.instructor_email_entry.setText(instructor_details[3])
+            self.instructor_id_entry.setText(instructor_details[0])
 
-        save_changes_btn = QPushButton("Save Changes")
-        save_changes_btn.clicked.connect(lambda: self.save_instructor_changes(instructor_id))
-        self.instructors_tab.layout().addWidget(save_changes_btn)
+            save_changes_btn = QPushButton("Save Changes")
+            save_changes_btn.clicked.connect(lambda: self.save_instructor_changes(instructor_id))
+            self.instructors_tab.layout().addWidget(save_changes_btn)
 
     def save_instructor_changes(self, instructor_id):
         name = self.instructor_name_entry.text()
@@ -318,16 +307,17 @@ class SchoolManagementSystem(QMainWindow):
             return
 
         # Update the instructor's information
-        instructor = Instructor(name=name, age=int(age), email=email, id=instructor_id)
+        instructor = Instructor(id = instructor_id, name = name, age = int(age), email = email )
 
-        save_data_to_json(instructor, 'instructors.json')
-        self.load_data()
-        self.populate_listboxes()
-        self.clear_instructor_entries()
-        self.message_label.setText(f"Instructor {instructor_id} updated successfully!")
+        try:
+            update_instructor(instructor)
+            self.populate_listboxes()
+            self.clear_instructor_entries()
+            self.message_label.setText(f"Instructor {instructor_id} updated successfully!")
+        except Exception as e:
+            self.message_label.setText(f"Error: {e}")
 
     def init_courses_tab(self):
-        # Initialize Courses Tab
         layout = QVBoxLayout()
         self.courses_tab.setLayout(layout)
 
@@ -368,20 +358,17 @@ class SchoolManagementSystem(QMainWindow):
             return
 
         # Create a Course object
-        course = Course(name=name, id=course_id)
+        course = Course(course_id, name, instructor_id)
 
         try:
-            validate_and_add_course(course)
-
-            # Save data to a JSON file
-            save_data_to_json(course, 'courses.json')
+            create_course(course)
 
             # Update listbox and message label
-            self.course_listbox.addItem(f"{course.name} (ID: {course.id})")
+            self.populate_listboxes()
             self.message_label.setText("Course added successfully!")
             self.clear_course_entries()
 
-        except ValueError as e:
+        except Exception as e:
             self.message_label.setText(f"Error: {e}")
 
     def clear_course_entries(self):
@@ -397,12 +384,12 @@ class SchoolManagementSystem(QMainWindow):
 
         course_id = selected.text().split(" (ID: ")[-1][:-1]
 
-        # Use delete_from_json function
-        if delete_from_json(course_id, 'courses.json'):
+        try:
+            delete_course(course_id)
             self.populate_listboxes()
             self.message_label.setText(f"Course {course_id} deleted successfully!")
-        else:
-            self.message_label.setText("Error: Course ID not found in the records.")
+        except Exception as e:
+            self.message_label.setText(f"Error: {e}")
 
     def edit_course(self):
         selected = self.course_listbox.currentItem()
@@ -411,16 +398,17 @@ class SchoolManagementSystem(QMainWindow):
             return
 
         course_id = selected.text().split(" (ID: ")[-1][:-1]
-        course_details = self.courses[course_id]
+        courses = read_course()
+        course_details = next((course for course in courses if course[0] == course_id), None)
 
-        # Fill the entry fields with the current course's details for editing
-        self.course_name_entry.setText(course_details['name'])
-        self.course_instructor_entry.setText(course_details['instructor'])
-        self.course_id_entry.setText(course_id)
+        if course_details:
+            self.course_name_entry.setText(course_details[1])
+            self.course_instructor_entry.setText(course_details[2])
+            self.course_id_entry.setText(course_details[0])
 
-        save_changes_btn = QPushButton("Save Changes")
-        save_changes_btn.clicked.connect(lambda: self.save_course_changes(course_id))
-        self.courses_tab.layout().addWidget(save_changes_btn)
+            save_changes_btn = QPushButton("Save Changes")
+            save_changes_btn.clicked.connect(lambda: self.save_course_changes(course_id))
+            self.courses_tab.layout().addWidget(save_changes_btn)
 
     def save_course_changes(self, course_id):
         name = self.course_name_entry.text()
@@ -436,16 +424,17 @@ class SchoolManagementSystem(QMainWindow):
             return
 
         # Update the course's information
-        course = Course(name=name, id=course_id, instructor=instructor)
+        course = Course(course_id, name, instructor)
 
-        save_data_to_json(course, 'courses.json')
-        self.load_data()
-        self.populate_listboxes()
-        self.clear_course_entries()
-        self.message_label.setText(f"Course {course_id} updated successfully!")
+        try:
+            update_course(course)
+            self.populate_listboxes()
+            self.clear_course_entries()
+            self.message_label.setText(f"Course {course_id} updated successfully!")
+        except Exception as e:
+            self.message_label.setText(f"Error: {e}")
 
     def init_search_tab(self):
-        # Initialize Search Tab
         layout = QVBoxLayout()
         self.search_tab.setLayout(layout)
 
@@ -481,47 +470,45 @@ class SchoolManagementSystem(QMainWindow):
         layout.addWidget(self.result_listbox)
 
     def perform_search(self, type):
+        search_term = None
         if self.student_search_entry.text():
-            search_term = self.student_search_entry.text().lower()
+            search_term = self.student_search_entry.text()
         elif self.instructor_search_entry.text():
-            search_term = self.instructor_search_entry.text().lower()
+            search_term = self.instructor_search_entry.text()
         elif self.courses_search_entry.text():
-            search_term = self.courses_search_entry.text().lower()
+            search_term = self.courses_search_entry.text()
         else:
             self.message_label.setText("Please enter an ID.")
             return
 
         if type == "student":
-            data = load_data_from_json('students.json')
+            data = read_students()
         elif type == "instructor":
-            data = load_data_from_json('instructors.json')
+            data = read_instructors()
         elif type == "course":
-            data = load_data_from_json('courses.json')
+            data = read_course()
 
         self.result_listbox.clear()
         match_found = False
 
-        for item_id, info in data.items():
-            if search_term == item_id:
+        for item in data:
+            if search_term == item[0]:  # item[0] is the ID
                 match_found = True
                 # Format the information in a readable way
                 if type == "student":
-                    self.result_listbox.addItem(f"Name: {info['name']}")
-                    self.result_listbox.addItem(f"ID: {item_id}")
-                    self.result_listbox.addItem(f"Age: {info['age']}")
-                    self.result_listbox.addItem(f"Email: {info['email']}")
-                    self.result_listbox.addItem(f"Registered Courses: {', '.join(info['registered_courses']) if info['registered_courses'] else 'None'}")
+                    self.result_listbox.addItem(f"Name: {item[1]}")
+                    self.result_listbox.addItem(f"ID: {item[0]}")
+                    self.result_listbox.addItem(f"Age: {item[2]}")
+                    self.result_listbox.addItem(f"Email: {item[3]}")
                 elif type == "instructor":
-                    self.result_listbox.addItem(f"Name: {info['name']}")
-                    self.result_listbox.addItem(f"ID: {item_id}")
-                    self.result_listbox.addItem(f"Age: {info['age']}")
-                    self.result_listbox.addItem(f"Email: {info['email']}")
-                    self.result_listbox.addItem(f"Assigned Courses: {', '.join(info['assigned_courses']) if info['assigned_courses'] else 'None'}")
+                    self.result_listbox.addItem(f"Name: {item[1]}")
+                    self.result_listbox.addItem(f"ID: {item[0]}")
+                    self.result_listbox.addItem(f"Age: {item[2]}")
+                    self.result_listbox.addItem(f"Email: {item[3]}")
                 elif type == "course":
-                    self.result_listbox.addItem(f"Course Name: {info['name']}")
-                    self.result_listbox.addItem(f"ID: {item_id}")
-                    self.result_listbox.addItem(f"Instructor: {info['instructor']}")
-                    self.result_listbox.addItem(f"Students: {', '.join(info['students']) if info['students'] else 'None'}")
+                    self.result_listbox.addItem(f"Course Name: {item[1]}")
+                    self.result_listbox.addItem(f"ID: {item[0]}")
+                    self.result_listbox.addItem(f"Instructor: {item[2]}")
 
         if not match_found:
             self.message_label.setText(f"No matching {type} found.")

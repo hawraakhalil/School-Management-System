@@ -1,7 +1,5 @@
 import sqlite3
 import os,sys
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from management.school_entities import Student, Instructor, Course
 
 # Connect to the SQLite database
 db_path = os.path.join('src/database', 'school_management.db')

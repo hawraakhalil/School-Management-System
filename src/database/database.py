@@ -1,8 +1,6 @@
 import sqlite3
 import os
 import sys
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from management.school_entities import Student, Instructor, Course
 
 # Function to create the database and tables
 def create_database():
