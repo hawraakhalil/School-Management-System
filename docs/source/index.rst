@@ -16,6 +16,4 @@ documentation for details.
    :caption: Contents:
    
    modules
-   pyqt_db_gui
-   pyqt_json_gui
-   tkinter_gui
+   tkinter_json_gui

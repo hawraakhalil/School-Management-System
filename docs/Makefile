@@ -6,8 +6,8 @@
 SPHINXOPTS    ?=
 SPHINXBUILD   ?= sphinx-build
 
-SOURCEDIR	= "C:\Users\hawra\Desktop\New folder\School-Management-System\docs\source"
-BUILDDIR	= "C:\Users\hawra\Desktop\New folder\School-Management-System\docs\build"
+SOURCEDIR	= "source"
+BUILDDIR	= "build"
 
 
 # Put it first so that "make" without argument is like "make help".

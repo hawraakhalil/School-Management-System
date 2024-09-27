@@ -1,9 +1,8 @@
-School Management System Modules
-===
+School-Management-System
+========================
 
 .. toctree::
    :maxdepth: 4
 
-   pyqt_db_gui
-   pyqt_json_gui
-   tkinter_gui
+  
+   tkinter_json_gui
