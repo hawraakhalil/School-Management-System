@@ -3,7 +3,6 @@ from tkinter import ttk
 from src.management.school_entities import Student, Instructor, Course
 from src.management.json_manager import *
 
-
 # -------------------------------------------
 # Functions for Setup
 # -------------------------------------------
