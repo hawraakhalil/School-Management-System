@@ -1,0 +1,24 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "cppdbg",
+      "request": "launch",
+      "args": [],
+      "stopAtEntry": false,
+      "externalConsole": true,
+      "cwd": "c:/Users/hawra/AppData/Local/Temp/2573b0f9-8c24-4941-b1d7-89bf3eb044ff_lab2sol.zip.4ff/lab2sol",
+      "program": "c:/Users/hawra/AppData/Local/Temp/2573b0f9-8c24-4941-b1d7-89bf3eb044ff_lab2sol.zip.4ff/lab2sol/build/Debug/outDebug",
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    }
+  ]
+}

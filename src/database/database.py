@@ -192,3 +192,41 @@ def delete_course(course_id):
     conn.commit()
     conn.close()
     
+def register_student_to_course(student_id, course_id):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO Registrations (student_id, course_id) VALUES (?, ?)
+    ''', (student_id, course_id))
+    conn.commit()
+    conn.close()
+
+def get_student_courses(student_id):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT course_id FROM Registrations WHERE student_id = ?
+    ''', (student_id,))
+    courses = cursor.fetchall()
+    conn.close()
+    return [course[0] for course in courses]
+
+def get_course_students(course_id):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT student_id FROM Registrations WHERE course_id = ?
+    ''', (course_id,))
+    students = cursor.fetchall()
+    conn.close()
+    return [student[0] for student in students]
+
+def get_instructor_courses(instructor_id):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT id FROM Courses WHERE instructor_id = ?
+    ''', (instructor_id,))
+    courses = cursor.fetchall()
+    conn.close()
+    return [course[0] for course in courses]
