@@ -3,6 +3,7 @@ from tkinter import ttk
 from src.management.school_entities import Student, Instructor, Course
 from src.management.json_manager import *
 
+
 # -------------------------------------------
 # Functions for Setup
 # -------------------------------------------
@@ -210,7 +211,8 @@ def edit_student():
         return
 
     student_id = student_listbox.get(selected).split(" (ID: ")[-1][:-1]
-    student_details = students[student_id]
+    students_data = load_data_from_json('students.json')
+    student_details = students_data[student_id]
 
     student_name_entry.delete(0, tk.END)
     student_name_entry.insert(tk.END, student_details['name'])
@@ -396,7 +398,8 @@ def edit_instructor():
         return
 
     instructor_id = instructor_listbox.get(selected).split(" (ID: ")[-1][:-1]
-    instructor_details = instructors[instructor_id]
+    instructors_data = load_data_from_json('instructors.json')
+    instructor_details = instructors_data[instructor_id]
 
     instructor_name_entry.delete(0, tk.END)
     instructor_name_entry.insert(tk.END, instructor_details['name'])
@@ -595,7 +598,8 @@ def edit_course():
         return
 
     course_id = course_listbox.get(selected).split(" (ID: ")[-1][:-1]
-    course_details = courses[course_id]
+    courses_data = load_data_from_json('courses.json')
+    course_details = courses_data[course_id]
 
     course_name_entry.delete(0, tk.END)
     course_name_entry.insert(tk.END, course_details['name'])
