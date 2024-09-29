@@ -4,7 +4,7 @@ This School Management System is a Python-based project designed to manage stude
 
 ## Features
 
-All three versions of the system include the following features:
+All four versions of the system include the following features:
 - **Student Management**: Add, edit, delete student records.
 - **Instructor Management**: Add, edit, delete instructor records.
 - **Course Management**: Add, edit, delete course records.
@@ -14,9 +14,14 @@ All three versions of the system include the following features:
   
 ### Available GUIs
 
-1. **Tkinter JSON-Based GUI (`tkinter_gui`)**
+1. **Tkinter JSON-Based GUI (`tkinter_json_gui`)**
    - Implements the user interface using Tkinter.
    - Data is stored in and loaded from JSON files.
+
+2. **Tkinter Database-Based GUI (`tkinter_db_gui`)**
+   - Implements the user interface using Tkinter.
+   - Utilizes SQLite3 database for data persistence.
+   - Implements full CRUD (Create, Read, Update, Delete) operations with database management.
 
 2. **PyQt JSON-Based GUI (`pyqt_json_gui`)**
    - Implements the user interface using PyQt.
@@ -32,9 +37,9 @@ All three versions of the system include the following features:
 ### Prerequisites
 - Python 3.x
 - Required Python libraries: 
-  - Tkinter (for `tkinter_gui`)
+  - Tkinter (for `tkinter_json_gui` and `tkinter_db_gui`)
   - PyQt5 (for `pyqt_json_gui` and `pyqt_db_gui`)
-  - SQLite3 (for `pyqt_db_gui`)
+  - SQLite3 (for `pyqt_db_gui` and `tkinter_db_gui`)
 
 ### Installation Instructions
 1. Clone this repository:
@@ -47,10 +52,15 @@ All three versions of the system include the following features:
 
 ## Usage
 
-### Running the Tkinter GUI (`tkinter_gui`)
+### Running the Tkinter JSON-Based GUI (`tkinter_json_gui`)
 To run the Tkinter version:
    ```bash
-   python tkinter_gui.py
+   python tkinter_json_gui.py
+ ```
+### Running the Tkinter Database-Based GUI (`tkinter_db_gui`)
+To run the Tkinter version:
+   ```bash
+   python tkinter_db_gui.py
  ```
 ### Running the PyQt JSON-Based GUI (pyqt_json_gui)
 To run the PyQt version that uses JSON for data storage: ana jon
